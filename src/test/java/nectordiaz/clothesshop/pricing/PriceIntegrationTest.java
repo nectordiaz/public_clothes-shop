@@ -10,11 +10,9 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
 
-// Suelo meter más cobertura pero por simplificar he metido solo lo que pedía el ejercicio
-
 @SpringBootTest
 @AutoConfigureMockMvc
-public class PriceControllerTest {
+public class PriceIntegrationTest {
 
   @Autowired MockMvc mockMvc;
 
