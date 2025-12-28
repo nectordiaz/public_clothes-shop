@@ -1,0 +1,98 @@
+openapi: 3.0.3
+info:
+  title: Prices Service API
+  version: 1.0.0
+  description: API para consultar precios aplicables de productos.
+servers:
+  - url: /
+paths:
+  /api/v1/prices:
+    get:
+      summary: Get applicable price
+      description: Devuelve el precio aplicable para un producto y marca en una fecha dada
+      parameters:
+        - $ref: '#/components/parameters/productId'
+        - $ref: '#/components/parameters/brandId'
+        - $ref: '#/components/parameters/applicationDate'
+      responses:
+        '200':
+          description: Price found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PriceResponseDto'
+              examples:
+                success:
+                  value:
+                    productId: 35455
+                    brandId: 1
+                    priceList: 1
+                    startDate: '2020-06-14T00:00:00'
+                    endDate: '2020-12-31T23:59:59'
+                    price: 35.50
+                    currency: EUR
+        '404':
+          description: No price found for given parameters
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+components:
+  parameters:
+    productId:
+      name: productId
+      in: query
+      required: true
+      schema:
+        type: integer
+        format: int64
+      description: Product identifier
+    brandId:
+      name: brandId
+      in: query
+      required: true
+      schema:
+        type: integer
+        format: int64
+      description: Brand identifier
+    applicationDate:
+      name: applicationDate
+      in: query
+      required: true
+      schema:
+        type: string
+        format: date-time
+      description: Fecha de aplicación en formato ISO-8601
+  schemas:
+    PriceResponseDto:
+      type: object
+      properties:
+        productId:
+          type: integer
+          format: int64
+        brandId:
+          type: integer
+          format: int64
+        priceList:
+          type: integer
+        startDate:
+          type: string
+          format: date-time
+        endDate:
+          type: string
+          format: date-time
+        price:
+          type: number
+          format: double
+        currency:
+          type: string
+      required: [ productId, brandId, priceList, startDate, endDate, price, currency ]
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required: [ error ]
+

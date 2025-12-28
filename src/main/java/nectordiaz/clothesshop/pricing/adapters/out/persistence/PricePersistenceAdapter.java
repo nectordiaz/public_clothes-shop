@@ -1,11 +1,10 @@
 package nectordiaz.clothesshop.pricing.adapters.out.persistence;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
-import nectordiaz.clothesshop.pricing.application.port.out.PricePort;
 import nectordiaz.clothesshop.pricing.domain.Price;
+import nectordiaz.clothesshop.pricing.domain.port.out.PricePort;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -16,9 +15,10 @@ public class PricePersistenceAdapter implements PricePort {
   private final PriceEntityMapper mapper;
 
   @Override
-  public List<Price> findPrices(Long productId, Long brandId, LocalDateTime applicationDate) {
-    return repository.findApplicablePrices(productId, brandId, applicationDate).stream()
-        .map(mapper::toDomain)
-        .collect(Collectors.toList());
+  public Optional<Price> findPrice(Long productId, Long brandId, LocalDateTime applicationDate) {
+    return repository
+        .findFirstByProductIdAndBrandIdAndStartDateLessThanEqualAndEndDateGreaterThanEqualOrderByPriorityDescPriceListDesc(
+            productId, brandId, applicationDate, applicationDate)
+        .map(mapper::toDomain);
   }
 }

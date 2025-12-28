@@ -1,4 +1,4 @@
-package nectordiaz.clothesshop.pricing;
+package nectordiaz.clothesshop.pricing.integration;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;

@@ -21,6 +21,7 @@
     <h2.version>2.2.224</h2.version>
     <jakarta.validation.version>3.0.2</jakarta.validation.version>
     <mapstruct.version>1.5.5.Final</mapstruct.version>
+    <cucumber.version>7.14.0</cucumber.version>
   </properties>
 
   <dependencies>
@@ -92,27 +93,6 @@
       <scope>test</scope>
     </dependency>
 
-    <dependency>
-      <groupId>io.cucumber</groupId>
-      <artifactId>cucumber-java</artifactId>
-      <version>7.14.0</version>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>io.cucumber</groupId>
-      <artifactId>cucumber-spring</artifactId>
-      <version>7.14.0</version>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>io.cucumber</groupId>
-      <artifactId>cucumber-junit-platform-engine</artifactId>
-      <version>7.14.0</version>
-      <scope>test</scope>
-    </dependency>
-
   </dependencies>
 
   <build>
@@ -154,7 +134,120 @@
         </configuration>
       </plugin>
 
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>3.1.2</version>
+        <configuration>
+          <argLine>-Dnet.bytebuddy.experimental=true</argLine>
+          <excludes>
+            <exclude>**/*IT.java</exclude>
+            <exclude>**/e2e/**</exclude>
+          </excludes>
+        </configuration>
+      </plugin>
+
     </plugins>
   </build>
+
+  <profiles>
+    <profile>
+      <id>e2e</id>
+
+      <dependencies>
+        <dependency>
+          <groupId>io.cucumber</groupId>
+          <artifactId>cucumber-java</artifactId>
+          <version>${cucumber.version}</version>
+          <scope>test</scope>
+        </dependency>
+
+        <dependency>
+          <groupId>io.cucumber</groupId>
+          <artifactId>cucumber-spring</artifactId>
+          <version>${cucumber.version}</version>
+          <scope>test</scope>
+        </dependency>
+
+        <dependency>
+          <groupId>io.cucumber</groupId>
+          <artifactId>cucumber-junit-platform-engine</artifactId>
+          <version>${cucumber.version}</version>
+          <scope>test</scope>
+        </dependency>
+      </dependencies>
+
+      <build>
+
+        <testResources>
+          <testResource>
+            <directory>src/e2e/resources</directory>
+          </testResource>
+        </testResources>
+
+        <plugins>
+
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>build-helper-maven-plugin</artifactId>
+            <version>3.5.0</version>
+            <executions>
+              <execution>
+                <id>add-e2e-sources</id>
+                <phase>generate-test-sources</phase>
+                <goals>
+                  <goal>add-test-source</goal>
+                </goals>
+                <configuration>
+                  <sources>
+                    <source>src/e2e/java</source>
+                  </sources>
+                </configuration>
+              </execution>
+
+              <execution>
+                <id>add-e2e-resources</id>
+                <phase>pre-integration-test</phase>
+                <goals>
+                  <goal>add-test-resource</goal>
+                </goals>
+                <configuration>
+                  <resources>
+                    <resource>
+                      <directory>src/e2e/resources</directory>
+                    </resource>
+                  </resources>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-failsafe-plugin</artifactId>
+            <version>3.1.2</version>
+            <configuration>
+              <classesDirectory>${project.build.outputDirectory}</classesDirectory>
+            </configuration>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>integration-test</goal>
+                  <goal>verify</goal>
+                </goals>
+                <configuration>
+                  <includes>
+                    <include>**/*IT.java</include>
+                  </includes>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+
 
 </project>

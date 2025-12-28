@@ -15,6 +15,7 @@ Cómo ejecutar:
 - Nota: Asegúrate de tener JAVA_HOME apuntando a un JDK 21 válido cuando compiles localmente.
 - Ejecutar tests: mvn clean test
 - Empaquetar: mvn package
+- Cucumber tests: mvn clean verify -Pe2e
 - Ejecutar jar: java -jar target/prices-service-1.0.0.jar
 
 Docker:

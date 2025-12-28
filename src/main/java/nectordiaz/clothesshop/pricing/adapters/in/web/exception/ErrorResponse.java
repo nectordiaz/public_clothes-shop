@@ -1,4 +1,4 @@
-package nectordiaz.clothesshop.pricing.exception;
+package nectordiaz.clothesshop.pricing.adapters.in.web.exception;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

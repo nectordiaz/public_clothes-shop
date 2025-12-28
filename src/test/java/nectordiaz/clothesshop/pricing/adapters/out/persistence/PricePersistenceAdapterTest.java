@@ -1,10 +1,12 @@
 package nectordiaz.clothesshop.pricing.adapters.out.persistence;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.Optional;
 import nectordiaz.clothesshop.pricing.domain.Price;
 import org.instancio.Instancio;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,14 +19,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class PricePersistenceAdapterTest {
 
-  @Mock
-  private PriceJpaRepository repository;
+  @Mock private PriceJpaRepository repository;
 
-  @Mock
-  private PriceEntityMapper mapper;
+  @Mock private PriceEntityMapper mapper;
 
-  @InjectMocks
-  private PricePersistenceAdapter adapter;
+  @InjectMocks private PricePersistenceAdapter adapter;
 
   private LocalDateTime applicationDate;
 
@@ -34,33 +33,33 @@ class PricePersistenceAdapterTest {
   }
 
   @Test
-  void shouldReturnMappedPrices_whenRepositoryReturnsEntities() {
+  void shouldReturnMappedPrices_whenRepositoryReturnsEntity() {
     // given
     Long productId = 35455L;
     Long brandId = 1L;
 
-    PriceEntity entity1 = Instancio.create(PriceEntity.class);
-    PriceEntity entity2 = Instancio.create(PriceEntity.class);
+    PriceEntity entity = Instancio.create(PriceEntity.class);
 
-    Price price1 = Instancio.create(Price.class);
-    Price price2 = Instancio.create(Price.class);
+    Optional<Price> price = Optional.of(Instancio.create(Price.class));
 
-    when(repository.findApplicablePrices(productId, brandId, applicationDate))
-        .thenReturn(List.of(entity1, entity2));
+    when(repository
+            .findFirstByProductIdAndBrandIdAndStartDateLessThanEqualAndEndDateGreaterThanEqualOrderByPriorityDescPriceListDesc(
+                productId, brandId, applicationDate, applicationDate))
+        .thenReturn(Optional.of(entity));
 
-    when(mapper.toDomain(entity1)).thenReturn(price1);
-    when(mapper.toDomain(entity2)).thenReturn(price2);
+    when(mapper.toDomain(entity)).thenReturn(price.get());
 
     // when
-    List<Price> result = adapter.findPrices(productId, brandId, applicationDate);
+    Optional<Price> result = adapter.findPrice(productId, brandId, applicationDate);
 
     // then
-    assertEquals(2, result.size());
-    assertEquals(List.of(price1, price2), result);
+    assertNotNull(result);
+    assertEquals(price, result);
 
-    verify(repository).findApplicablePrices(productId, brandId, applicationDate);
-    verify(mapper).toDomain(entity1);
-    verify(mapper).toDomain(entity2);
+    verify(repository)
+        .findFirstByProductIdAndBrandIdAndStartDateLessThanEqualAndEndDateGreaterThanEqualOrderByPriorityDescPriceListDesc(
+            productId, brandId, applicationDate, applicationDate);
+    verify(mapper).toDomain(entity);
     verifyNoMoreInteractions(repository, mapper);
   }
 
@@ -70,16 +69,20 @@ class PricePersistenceAdapterTest {
     Long productId = 35455L;
     Long brandId = 1L;
 
-    when(repository.findApplicablePrices(productId, brandId, applicationDate))
-        .thenReturn(List.of());
+    when(repository
+            .findFirstByProductIdAndBrandIdAndStartDateLessThanEqualAndEndDateGreaterThanEqualOrderByPriorityDescPriceListDesc(
+                productId, brandId, applicationDate, applicationDate))
+        .thenReturn(Optional.empty());
 
     // when
-    List<Price> result = adapter.findPrices(productId, brandId, applicationDate);
+    Optional<Price> result = adapter.findPrice(productId, brandId, applicationDate);
 
     // then
-    assertEquals(0, result.size());
+    assertTrue(result.isEmpty());
 
-    verify(repository).findApplicablePrices(productId, brandId, applicationDate);
+    verify(repository)
+        .findFirstByProductIdAndBrandIdAndStartDateLessThanEqualAndEndDateGreaterThanEqualOrderByPriorityDescPriceListDesc(
+            productId, brandId, applicationDate, applicationDate);
     verifyNoInteractions(mapper);
   }
 }

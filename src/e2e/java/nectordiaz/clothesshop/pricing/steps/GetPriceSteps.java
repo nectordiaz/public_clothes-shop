@@ -16,8 +16,7 @@ import org.springframework.test.web.servlet.MvcResult;
 
 public class GetPriceSteps {
 
-  @Autowired
-  private MockMvc mockMvc;
+  @Autowired private MockMvc mockMvc;
 
   private Long productId;
   private Long brandId;

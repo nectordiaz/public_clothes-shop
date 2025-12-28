@@ -1,7 +1,5 @@
-package nectordiaz.clothesshop.pricing.exception;
+package nectordiaz.clothesshop.pricing.adapters.in.web.exception;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -40,19 +38,16 @@ public class ApiExceptionHandler {
     return ResponseEntity.badRequest().body(new ErrorResponse(msg));
   }
 
+  @ExceptionHandler(NotFoundException.class)
+  public ResponseEntity<?> handleNotFound(NotFoundException ex) {
+    logger.warn("Resource not found: {}", ex.getMessage());
+    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse(ex.getMessage()));
+  }
+
   @ExceptionHandler(Exception.class)
   public ResponseEntity<?> handleGeneric(Exception ex) {
-    // Aquí habría que meter algún mecanismo o sistema de alertas para categorizar qué excepciones
-    // de qué casos de uso levantar como críticas
     logger.error("Unhandled exception caught in ApiExceptionHandler: {}", ex.getMessage(), ex);
     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
         .body(new ErrorResponse("Internal server error"));
-  }
-
-  @Data
-  @AllArgsConstructor
-  static class ErrorResponse {
-
-    private String error;
   }
 }

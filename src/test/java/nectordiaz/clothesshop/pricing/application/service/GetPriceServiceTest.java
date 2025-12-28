@@ -1,14 +1,16 @@
 package nectordiaz.clothesshop.pricing.application.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
-import nectordiaz.clothesshop.pricing.application.port.out.PricePort;
+import nectordiaz.clothesshop.pricing.adapters.in.web.exception.NotFoundException;
 import nectordiaz.clothesshop.pricing.domain.Price;
+import nectordiaz.clothesshop.pricing.domain.port.out.PricePort;
 import org.instancio.Instancio;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -32,47 +34,29 @@ class GetPriceServiceTest {
   }
 
   @Test
-  void shouldReturnEmptyOptional_whenNoPricesFound() {
+  void shouldThrowNotFoundException_whenNoPricesFound() {
     // given
     Long productId = 35455L;
     Long brandId = 1L;
 
-    when(pricePort.findPrices(productId, brandId, applicationDate)).thenReturn(List.of());
-
     // when
-    Optional<Price> result = getPriceService.getPrice(productId, brandId, applicationDate);
+    when(pricePort.findPrice(productId, brandId, applicationDate)).thenReturn(Optional.empty());
 
     // then
-    assertTrue(result.isEmpty());
-    verify(pricePort).findPrices(productId, brandId, applicationDate);
-    verifyNoMoreInteractions(pricePort);
-  }
+    NotFoundException exception =
+        assertThrows(
+            NotFoundException.class,
+            () -> getPriceService.getPrice(productId, brandId, applicationDate));
 
-  @Test
-  void shouldReturnPriceWithHighestPriority_whenMultiplePricesFound() {
-    // given
-    Long productId = 35455L;
-    Long brandId = 1L;
+    assertTrue(
+        exception
+            .getMessage()
+            .contains(
+                String.format(
+                    "No price found for productId=%d, brandId=%d, applicationDate=%s",
+                    productId, brandId, applicationDate)));
 
-    Price price1 = Instancio.create(Price.class);
-    Price price2 = Instancio.create(Price.class);
-    Price price3 = Instancio.create(Price.class);
-
-    price1.setPriority(0);
-    price2.setPriority(1);
-    price3.setPriority(1); // same level of priority as price2
-
-    when(pricePort.findPrices(productId, brandId, applicationDate))
-        .thenReturn(List.of(price1, price2, price3));
-
-    // when
-    Optional<Price> result = getPriceService.getPrice(productId, brandId, applicationDate);
-
-    // then
-    assertTrue(result.isPresent());
-    assertEquals(1, result.get().getPriority());
-    // Podría ser price2 o price3 ya que tienen misma prioridad
-    verify(pricePort).findPrices(productId, brandId, applicationDate);
+    verify(pricePort).findPrice(productId, brandId, applicationDate);
     verifyNoMoreInteractions(pricePort);
   }
 
@@ -85,16 +69,16 @@ class GetPriceServiceTest {
     Price singlePrice = Instancio.create(Price.class);
     singlePrice.setPriority(5);
 
-    when(pricePort.findPrices(productId, brandId, applicationDate))
-        .thenReturn(List.of(singlePrice));
+    when(pricePort.findPrice(productId, brandId, applicationDate))
+        .thenReturn(Optional.of(singlePrice));
 
     // when
-    Optional<Price> result = getPriceService.getPrice(productId, brandId, applicationDate);
+    Price result = getPriceService.getPrice(productId, brandId, applicationDate);
 
     // then
-    assertTrue(result.isPresent());
-    assertEquals(5, result.get().getPriority());
-    verify(pricePort).findPrices(productId, brandId, applicationDate);
+    assertNotNull(result);
+    assertEquals(5, result.getPriority());
+    verify(pricePort).findPrice(productId, brandId, applicationDate);
     verifyNoMoreInteractions(pricePort);
   }
 }
